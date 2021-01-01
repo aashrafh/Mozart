@@ -14,6 +14,10 @@ def rle_encode(arr):
 
 
 def hv_rle(img, axis=1):
+    '''
+    img: binary image
+    axis: 0 for rows, 1 for cols
+    '''
     rle, values = [], []
 
     if axis == 1:
