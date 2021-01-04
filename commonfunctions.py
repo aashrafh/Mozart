@@ -7,6 +7,7 @@ from skimage.exposure import histogram
 from matplotlib.pyplot import bar
 from skimage.color import rgb2gray
 from skimage.filters import threshold_otsu, gaussian
+from skimage.morphology import binary_opening, binary_closing, binary_dilation, binary_erosion, closing, opening, square, skeletonize
 
 
 def show_images(images, titles=None):
@@ -34,22 +35,47 @@ def showHist(img):
     bar(imgHist[1].astype(np.uint8), imgHist[0], width=0.8, align='center')
 
 
-def gray_img(img):
-    '''
-    img: rgb image
-    return: gray image, pixel values 0:255
-    '''
-    gray = rgb2gray(img)
-    if len(img.shape) == 3:
-        gray = gray*255
+# def gray_img(img):
+#     '''
+#     img: rgb image
+#     return: gray image, pixel values 0:255
+#     '''
+#     gray = rgb2gray(img)
+#     if len(img.shape) == 3:
+#         gray = gray*255
+#     return gray
+
+
+# def otsu(img):
+#     '''
+#     img: gray image
+#     return: binary image, pixel values 0:1
+#     '''
+#     blur = gaussian(img)
+#     otsu_bin = 255*(blur > threshold_otsu(blur))
+#     return (otsu_bin/255).astype(np.int32)
+
+def get_gray(img):
+    gray = rgb2gray(np.copy(img))
     return gray
 
 
-def otsu(img):
-    '''
-    img: gray image
-    return: binary image, pixel values 0:1
-    '''
-    blur = gaussian(img)
-    otsu_bin = 255*(blur > threshold_otsu(blur))
-    return (otsu_bin/255).astype(np.int32)
+def get_thresholded(img, thresh):
+    return 1*(img > thresh)
+
+
+def histogram(img, thresh):
+    hist = (np.ones(img.shape) - img).sum(dtype=np.int32, axis=1)
+    _max = np.amax(hist)
+    hist[hist[:] < _max * thresh] = 0
+    return hist
+
+
+def get_line_indices(hist):
+    indices = []
+    prev = 0
+    for index, val in enumerate(hist):
+        if val > 0 and prev <= 0:
+            indices.append(index)
+        prev = val
+    return indices
