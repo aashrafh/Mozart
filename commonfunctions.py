@@ -6,14 +6,10 @@ import numpy as np
 from skimage.exposure import histogram
 from matplotlib.pyplot import bar
 from skimage.color import rgb2gray
-
-# Show the figures / plots inside the notebook
+from skimage.filters import threshold_otsu, gaussian
 
 
 def show_images(images, titles=None):
-    # This function is used to show image(s) with titles by sending an array of images and an array of associated titles.
-    # images[0] will be drawn with the title titles[0] if exists
-    # You aren't required to understand this function, use it as-is.
     n_ims = len(images)
     if titles is None:
         titles = ['(%d)' % i for i in range(1, n_ims + 1)]
@@ -32,8 +28,28 @@ def show_images(images, titles=None):
 
 
 def showHist(img):
-    # An "interface" to matplotlib.axes.Axes.hist() method
     plt.figure()
     imgHist = histogram(img, nbins=256)
 
     bar(imgHist[1].astype(np.uint8), imgHist[0], width=0.8, align='center')
+
+
+def gray_img(img):
+    '''
+    img: rgb image
+    return: gray image, pixel values 0:255
+    '''
+    gray = rgb2gray(img)
+    if len(img.shape) == 3:
+        gray = gray*255
+    return gray
+
+
+def otsu(img):
+    '''
+    img: gray image
+    return: binary image, pixel values 0:1
+    '''
+    blur = gaussian(img)
+    otsu_bin = 255*(blur > threshold_otsu(blur))
+    return (otsu_bin/255).astype(np.int32)
