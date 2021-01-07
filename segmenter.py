@@ -15,64 +15,16 @@ class Segmenter(object):
             self.rle, self.vals, self.thickness, self.bin_img.shape)
 
         self.segment()
-        self.rows = []
-        for i, region in enumerate(self.regions_without_staff):
-            staff_lines = self.regions_with_staff[i] - region
-            staff_lines = get_thresholded(
-                staff_lines, threshold_otsu(staff_lines))
-            row_pos = self.staff_row_position(staff_lines)
-            rows = self.lines_rows(row_pos)
-            self.rows.append(rows)
-
-    def staff_row_position(self, staff_lines):
-        img = np.copy(staff_lines)
-        found = 0
-        row_position = -1
-        for i in range(img.shape[0]):
-            for j in range(img.shape[1]):
-                if(img[i][j] == 0):
-                    row_position = i
-                    found = 1
-                    break
-            if found == 1:
-                break
-        return row_position
-
-    def lines_rows(self, row_position):
-        start = row_position
-        start -= self.most_common
-        rows = []
-        row = [start]
-        i = 1
-        for x in range(7*self.thickness):
-            if i < self.thickness:
-                start += 1
-                i += 1
-                row.append(start)
-            else:
-                rows.append(row)
-                row = []
-                start += self.spacing+1
-                row.append(start)
-                i = 1
-        return [np.average(x) for x in rows]
-
-    def draw_staff(self):
-        image = np.copy(self.no_staff_img)
-        for x in range(len(self.rows)):
-            image[self.rows[x], :] = 0
-        return image
 
     def open_region(self, region):
-        thickness = 3*np.copy(self.thickness)
-        if thickness % 2 == 0:
-            thickness += 1
+        thickness = np.copy(self.thickness)
+        # if thickness % 2 == 0:
+        #     thickness += 1
         return opening(region, np.ones((thickness, thickness)))
 
     def segment(self):
-        line_indices = get_line_indices(histogram(self.bin_img, 0.8))
-
-        if len(line_indices) == 5:
+        self.line_indices = get_line_indices(histogram(self.bin_img, 0.8))
+        if len(self.line_indices) == 5:
             self.regions_without_staff = [
                 np.copy(self.open_region(self.no_staff_img))]
             self.regions_with_staff = [np.copy(self.bin_img)]
@@ -80,7 +32,7 @@ class Segmenter(object):
 
         generated_lines_img = np.copy(self.no_staff_img)
         lines = []
-        for index in line_indices:
+        for index in self.line_indices:
             line = ((0, index), (self.bin_img.shape[1]-1, index))
             lines.append(line)
 
@@ -116,8 +68,8 @@ class Segmenter(object):
             y1 = int(center) + max_margin + offset - margin
             end_points.append((y0, y1))
 
-            regions_with_staff.append(
-                self.bin_img[y0:y1, 0:self.bin_img.shape[1]])
+            region = self.bin_img[y0:y1, 0:self.bin_img.shape[1]]
+            regions_with_staff.append(region)
             staff_block = self.no_staff_img[y0:y1,
                                             0:self.no_staff_img.shape[1]]
 

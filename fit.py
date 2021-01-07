@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from box import Box
 
+
 def fit(img, templates, sscale, escale, thresh):
     count = -1
     locations = []
@@ -11,20 +12,22 @@ def fit(img, templates, sscale, escale, thresh):
         cur_locations = []
         cur_count = 0
         for template in templates:
-            template = cv2.resize(template, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+            template = cv2.resize(template, None, fx=scale,
+                                  fy=scale, interpolation=cv2.INTER_CUBIC)
             result = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
             result = np.where(result >= thresh)
             cur_count += len(result[0])
             locations += [result]
-        
+
         if cur_count > count:
             count = cur_count
             locations = cur_locations
             final_scale = scale
         elif cur_count < count:
             pass
-    
+
     return locations, final_scale
+
 
 def match(img, templates, sscale, escale, thresh):
     locations, scale = fit(img, templates, sscale, escale, thresh)
@@ -33,8 +36,10 @@ def match(img, templates, sscale, escale, thresh):
         w, h = templates[i].shape[::-1]
         w *= scale
         h *= scale
-        img_locations.append([Box(pt[0], pt[1], w, h) for pt in zip(*locations[i][::-1])])
+        img_locations.append([Box(pt[0], pt[1], w, h)
+                              for pt in zip(*locations[i][::-1])])
     return img_locations
+
 
 def remove_repeated_matches(recs, threshold):
     filtered_recs = []

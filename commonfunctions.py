@@ -35,25 +35,27 @@ def showHist(img):
     bar(imgHist[1].astype(np.uint8), imgHist[0], width=0.8, align='center')
 
 
-# def gray_img(img):
-#     '''
-#     img: rgb image
-#     return: gray image, pixel values 0:255
-#     '''
-#     gray = rgb2gray(img)
-#     if len(img.shape) == 3:
-#         gray = gray*255
-#     return gray
+def gray_img(img):
+    '''
+    img: rgb image
+    return: gray image, pixel values 0:255
+    '''
+    gray = rgb2gray(img)
+    if len(img.shape) == 3:
+        gray = gray*255
+    return gray
 
 
-# def otsu(img):
-#     '''
-#     img: gray image
-#     return: binary image, pixel values 0:1
-#     '''
-#     blur = gaussian(img)
-#     otsu_bin = 255*(blur > threshold_otsu(blur))
-#     return (otsu_bin/255).astype(np.int32)
+def otsu(img):
+    '''
+    Otsu with gaussian
+    img: gray image
+    return: binary image, pixel values 0:1
+    '''
+    blur = gaussian(img)
+    otsu_bin = 255*(blur > threshold_otsu(blur))
+    return (otsu_bin/255).astype(np.int32)
+
 
 def get_gray(img):
     gray = rgb2gray(np.copy(img))
@@ -79,3 +81,15 @@ def get_line_indices(hist):
             indices.append(index)
         prev = val
     return indices
+
+
+def get_region_lines_indices(self, region):
+    indices = get_line_indices(histogram(region, 0.8))
+    lines = []
+    for line_index in indices:
+        line = []
+        for k in range(self.thickness):
+            line.append(line_index+k)
+        # print(line)
+        lines.append(line)
+    self.rows.append([np.average(x) for x in lines])
