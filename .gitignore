@@ -4,3 +4,9 @@ prims/
 templates/
 blocks/
 train_data/
+*.sav
+prims_without_staff/
+output/
+heads/
+dataset
+folder/
