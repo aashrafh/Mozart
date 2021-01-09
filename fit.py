@@ -1,9 +1,11 @@
 import cv2
 import numpy as np
 from box import Box
+from train import train
+import os
 
 
-def fit(img, templates, sscale, escale, thresh):
+def _match(img, templates, sscale, escale, thresh):
     count = -1
     locations = []
     final_scale = 1
@@ -30,7 +32,7 @@ def fit(img, templates, sscale, escale, thresh):
 
 
 def match(img, templates, sscale, escale, thresh):
-    locations, scale = fit(img, templates, sscale, escale, thresh)
+    locations, scale = _match(img, templates, sscale, escale, thresh)
     img_locations = []
     for i in range(len(templates)):
         w, h = templates[i].shape[::-1]
@@ -46,17 +48,26 @@ def remove_repeated_matches(recs, threshold):
     while len(recs) > 0:
         r = recs.pop(0)
         recs.sort(key=lambda rec: rec.distance(r))
-        merged = True
-        while(merged):
-            merged = False
+        overlapped = True
+        while(overlapped):
+            overlapped = False
             i = 0
             for _ in range(len(recs)):
                 if r.overlap(recs[i]) > threshold or recs[i].overlap(r) > threshold:
                     r = r.merge(recs.pop(i))
-                    merged = True
+                    overlapped = True
                 elif recs[i].distance(r) > r.w/2 + recs[i].w/2:
                     break
                 else:
                     i += 1
         filtered_recs.append(r)
     return filtered_recs
+
+
+def predict(img):
+    if not os.path.exists('trained_models/svm_trained_model_hog.sav'):
+        train('SVM', 'hog', 'svm_trained_model_hog')
+    model = pickle.load(open('trained_models/svm_trained_model_hog.sav', 'rb'))
+    features = extract_features(img, 'hog')
+    labels = model.predict([features])
+    return labels

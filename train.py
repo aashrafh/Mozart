@@ -88,11 +88,15 @@ def run_experiment(classifier='SVM', feature_set='hog', dir_names=[]):
     return model, accuracy
 
 
-if __name__ == "__main__":
+def train(model_name, feature_name, saved_model_name):
     dataset_path = 'train_data/data'
     dir_names = [path.split('/')[2] for path in glob(f'{dataset_path}/*')]
 
-    model, accuracy = run_experiment('SVM', 'hog')
+    model, accuracy = run_experiment(model_name, feature_name)
 
-    filename = f'trained_models/svm_trained_model_hog_{accuracy}.sav'
+    filename = f'trained_models/{saved_model_name}.sav'
     pickle.dump(model, open(filename, 'wb'))
+
+
+if __name__ == "__main__":
+    train('SVM', 'hog', 'svm_trained_model_hog')
