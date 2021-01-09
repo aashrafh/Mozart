@@ -13,3 +13,4 @@ folder/
 .ipynb_checkpoints
 __pycache__
 .vscode
+trained_models/knn_trained_model_raw.sav
