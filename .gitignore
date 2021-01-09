@@ -10,3 +10,6 @@ output/
 heads/
 dataset
 folder/
+.ipynb_checkpoints
+__pycache__
+.vscode
