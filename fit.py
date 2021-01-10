@@ -1,8 +1,9 @@
 import cv2
 import numpy as np
 from box import Box
-from train import train
+from train import *
 import os
+import pickle
 
 
 def _match(img, templates, sscale, escale, thresh):
@@ -65,9 +66,35 @@ def remove_repeated_matches(recs, threshold):
 
 
 def predict(img):
-    if not os.path.exists('trained_models/svm_trained_model_hog.sav'):
-        train('SVM', 'hog', 'svm_trained_model_hog')
-    model = pickle.load(open('trained_models/svm_trained_model_hog.sav', 'rb'))
+    # if not os.path.exists('trained_models/svm_trained_model_hog.sav'):
+    #     print('Please wait while training the SVM-HOG model....')
+    #     train('SVM', 'hog', 'svm_trained_model_hog')
+    # if not os.path.exists('trained_models/svm_trained_model_raw.sav'):
+    #     print('Please wait while training the SVM-RAW model....')
+    #     train('SVM', 'raw', 'svm_trained_model_raw')
+    if not os.path.exists('trained_models/nn_trained_model_hog.sav'):
+        print('Please wait while training the NN-HOG model....')
+        train('NN', 'hog', 'nn_trained_model_hog')
+
+    # models = [pickle.load(open('trained_models/svm_trained_model_hog.sav', 'rb')), pickle.load(open(
+    #     'trained_models/svm_trained_model_raw.sav', 'rb')), pickle.load(open('trained_models/nn_trained_model_hog.sav', 'rb'))]
+    # models_feature = ['hog', 'raw', 'hog']
+
+    # features = extract_features(img, models_feature[0])
+    # labels = models[0].predict([features])
+    # print(np.max(models[0].decision_function([features])), labels)
+
+    # features = extract_features(img, models_feature[1])
+    # labels = models[1].predict([features])
+    # print(np.max(models[1].decision_function([features])), labels)
+
+    model = pickle.load(open('trained_models/nn_trained_model_hog.sav', 'rb'))
     features = extract_features(img, 'hog')
     labels = model.predict([features])
+    # print(np.max(models[2].predict_proba([features])), labels)
     return labels
+
+
+# if __name__ == "__main__":
+#     img = cv2.imread('testresult/0_3.png')
+#     predict(img)

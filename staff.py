@@ -3,6 +3,9 @@ from commonfunctions import *
 from collections import Counter
 
 
+row_percentage = 0.3
+
+
 def calculate_thickness_spacing(rle, most_common):
     bw_patterns = [most_common_bw_pattern(col, most_common) for col in rle]
     bw_patterns = [x for x in bw_patterns if x]  # Filter empty patterns
@@ -56,19 +59,20 @@ def remove_staff_lines(rle, vals, thickness, shape):
     return hv_decode(n_rle, n_vals, shape)
 
 
-def get_staff_row_position(img):
-    found = 0
-    row_position = -1
-    for i in range(img.shape[0]):
-        for j in range(img.shape[1]):
-            if(img[i][j] == 0):
-                row_position = i
-                found = 1
-                break
-        if found == 1:
-            break
-    print(row_position)
-    return row_position
+def remove_staff_lines_2(thickness, img_with_staff):
+    img = img_with_staff.copy()
+    projected = []
+    rows, cols = img.shape
+    for i in range(rows):
+        proj_sum = 0
+        for j in range(cols):
+            proj_sum += img[i][j] == 1
+        projected.append([1]*proj_sum + [0]*(cols-proj_sum))
+        if(proj_sum <= row_percentage*cols):
+            img[i, :] = 1
+    closed = binary_opening(img, np.ones((3*thickness, 1)))
+    show_images([img, closed], ['Removed Staff', 'Closed'])
+    return closed
 
 
 def get_rows(start, most_common, thickness, spacing):
@@ -82,19 +86,6 @@ def get_rows(start, most_common, thickness, spacing):
 
         start += (spacing)
         rows.append(row)
-    # row = [start]
-    # i = 1
-    # for x in range(7*thickness):
-    #     if i < thickness:
-    #         start += 1
-    #         i += 1
-    #         row.append(start)
-    #     else:
-    #         rows.append(row)
-    #         row = []
-    #         start += spacing
-    #         row.append(start)
-    #         i = 1
     return rows
 
 
@@ -116,11 +107,11 @@ def coordinator(bin_img):
     rle, vals = hv_rle(bin_img)
     most_common = get_most_common(rle)
     thickness, spacing = calculate_thickness_spacing(rle, most_common)
-    no_staff_img = remove_staff_lines(rle, vals, thickness, bin_img.shape)
+    # no_staff_img = remove_staff_lines(rle, vals, thickness, bin_img.shape)
+    no_staff_img = remove_staff_lines_2(thickness, bin_img)
     staff_lines = otsu(bin_img - no_staff_img)
     show_images([staff_lines])
-    staff_lines_row_position = get_staff_row_position(staff_lines)
     staff_row_positions = get_rows(
         start-most_common, most_common, thickness, spacing)
     staff_row_positions = [np.average(x) for x in staff_row_positions]
-    return spacing, staff_row_positions
+    return spacing, staff_row_positions, no_staff_img

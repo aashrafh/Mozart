@@ -1,5 +1,6 @@
 from commonfunctions import *
 from skimage.transform import probabilistic_hough_line,hough_line, rotate
+
 def deskew(image):
     thresh = threshold_otsu(image)
     normalize = image > thresh
