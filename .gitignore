@@ -14,3 +14,4 @@ folder/
 __pycache__
 .vscode
 trained_models/knn_trained_model_raw.sav
+trained_models/
