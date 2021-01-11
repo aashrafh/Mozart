@@ -61,15 +61,17 @@ def extract_features(img, feature_set='raw'):
 def load_dataset(feature_set='raw', dir_names=[]):
     features = []
     labels = []
+    count = 0
     for dir_name in dir_names:
         print(dir_name)
         imgs = glob(f'{dataset_path}/{dir_name}/*.png')
+        count += len(imgs)
         subset = random.sample([i for i in range(len(imgs))], sample_count)
         for i in subset:
             img = cv2.imread(imgs[i])
             labels.append(dir_name)
             features.append(extract_features(img, feature_set))
-
+    print(f'Total: {len(dir_names)} directories, and {count} images')
     return features, labels
 
 
@@ -79,9 +81,14 @@ def load_classifiers():
     np.random.seed(random_seed)
 
     classifiers = {
-        'SVM': svm.SVC(kernel='linear', random_state=random_seed, probability=True, max_iter=100),
+        'SVM': svm.LinearSVC(random_state=random_seed),
         'KNN': KNeighborsClassifier(n_neighbors=7),
-        'NN': MLPClassifier(solver='sgd', random_state=random_seed, hidden_layer_sizes=(500,), max_iter=50, verbose=1)
+        'NN': MLPClassifier(activation='relu', hidden_layer_sizes=(200,),
+                            max_iter=10000, alpha=1e-4,
+                            solver='adam', verbose=20,
+                            tol=1e-8, random_state=1,
+                            learning_rate_init=.0001,
+                            learning_rate='adaptive')
     }
     return classifiers, random_seed
 
@@ -115,6 +122,7 @@ def train(model_name, feature_name, saved_model_name):
 
 
 if __name__ == "__main__":
+    # train('KNN', 'hog', 'knn_trained_model_hog_fullset')
     # train('SVM', 'raw', 'svm_trained_model_raw')
-    train('SVM', 'hog', 'svm_trained_model_hog')
-    # train('NN', 'hog', 'nn_trained_model_hog')
+    # train('SVM', 'hog', 'svm_trained_model_hog_fullset')
+    train('NN', 'hog', 'nn_trained_model_hog_adam_2')
