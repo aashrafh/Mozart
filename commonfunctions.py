@@ -6,8 +6,9 @@ import numpy as np
 from skimage.exposure import histogram
 from matplotlib.pyplot import bar
 from skimage.color import rgb2gray
-from skimage.filters import threshold_otsu, gaussian
+from skimage.filters import threshold_otsu, gaussian,median
 from skimage.morphology import binary_opening, binary_closing, binary_dilation, binary_erosion, closing, opening, square, skeletonize, disk
+from skimage.feature import canny
 from skimage.transform import resize
 
 
