@@ -71,7 +71,6 @@ def remove_staff_lines_2(thickness, img_with_staff):
         if(proj_sum <= row_percentage*cols):
             img[i, :] = 1
     closed = binary_opening(img, np.ones((3*thickness, 1)))
-    show_images([img, closed], ['Removed Staff', 'Closed'])
     return closed
 
 
@@ -79,7 +78,6 @@ def get_rows(start, most_common, thickness, spacing):
     # start = start-most_common
     rows = []
     num = 6
-    print(most_common,spacing)
     if start - most_common >= 0:
         start -= most_common
         num = 7
@@ -90,6 +88,8 @@ def get_rows(start, most_common, thickness, spacing):
             start += 1
         start += (spacing)
         rows.append(row)
+    if len(rows) == 6:
+        rows = [0] + rows
     return rows
 
 
@@ -117,7 +117,6 @@ def get_staff_row_position(img):
                 break
         if found == 1:
             break
-    print(row_position)
     return row_position
 
 
@@ -131,14 +130,17 @@ def coordinator(bin_img, horizontal):
         start = horizontal_projection(bin_img)
     else:
         no_staff_img = remove_staff_lines(rle, vals, thickness, bin_img.shape)
-        no_staff_img = binary_closing(no_staff_img,np.ones((thickness+2,thickness+2)))
+        no_staff_img = binary_closing(
+            no_staff_img, np.ones((thickness+2, thickness+2)))
         no_staff_img = median(no_staff_img)
+        no_staff_img = binary_opening(
+            no_staff_img, np.ones((thickness+2, thickness+2)))
         staff_lines = otsu(bin_img - no_staff_img)
-        staff_lines = binary_erosion(staff_lines,np.ones((thickness+2,thickness+2)))
-        staff_lines = median(staff_lines,selem = square(21))
+        staff_lines = binary_erosion(
+            staff_lines, np.ones((thickness+2, thickness+2)))
+        staff_lines = median(staff_lines, selem=square(21))
         start = get_staff_row_position(staff_lines)
     staff_row_positions = get_rows(
         start, most_common, thickness, spacing)
     staff_row_positions = [np.average(x) for x in staff_row_positions]
-    show_images([staff_lines])
     return spacing, staff_row_positions, no_staff_img
