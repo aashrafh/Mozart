@@ -24,7 +24,7 @@ class Segmenter(object):
 
     def segment(self):
         self.line_indices = get_line_indices(histogram(self.bin_img, 0.8))
-        if len(self.line_indices) == 5:
+        if len(self.line_indices) < 10:
             self.regions_without_staff = [
                 np.copy(self.open_region(self.no_staff_img))]
             self.regions_with_staff = [np.copy(self.bin_img)]
