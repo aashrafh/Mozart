@@ -1,36 +1,16 @@
 from commonfunctions import *
 from pre_processing import *
+from connected_componentes import *
 from staff import calculate_thickness_spacing, remove_staff_lines, coordinator
 from segmenter import Segmenter
-from connected_componentes import *
 from fit import match, remove_repeated_matches, predict
-from symbol import Note
-from box import Box
 from glob import glob
 import cv2
 import pickle
-from imutils import resize as im_resize
 from scipy.ndimage import binary_fill_holes
-from skimage.morphology import skeletonize, thin
+from skimage.morphology import thin
 import argparse
-
-
-quarter_templates = ['heads/black/quarter.png', 'heads/black/solid-note.png']
-half_templates = ['heads/half/half-note-space.png',
-                  'heads/half/half-space.png', 'heads/half/half.png']
-whole_templates = ['heads/whole/whole-note-space.png',
-                   'heads/whole/whole-space.png', 'heads/whole/whole.png']
-
-templates = {
-    'quarters': [cv2.imread(temp_path, 0) for temp_path in quarter_templates],
-    'halfs': [cv2.imread(temp_path, 0) for temp_path in half_templates],
-    'wholes': [cv2.imread(temp_path, 0) for temp_path in whole_templates]
-}
-
-img_name = '01'
-img_ext = 'PNG'
-scanned_path = 'testcases/test-set-scanned/test-cases/'
-camera_path = 'testcases/test-set-camera-captured/test-cases/'
+from camera_segmenter import *
 
 label_map = {
     0: {
@@ -120,12 +100,12 @@ def get_chord_notation(chord_list):
     return chord_res
 
 
-def recognize(out_file, segmenter, coord_imgs, imgs_with_staff, imgs_spacing, imgs_rows):
+def recognize(out_file, most_common, coord_imgs, imgs_with_staff, imgs_spacing, imgs_rows):
     black_names = ['4', '8', '8_b_n', '8_b_r', '16', '16_b_n', '16_b_r',
                    '32', '32_b_n', '32_b_r', 'a_4', 'a_8', 'a_16', 'a_32', 'chord']
     ring_names = ['2', 'a_2']
     whole_names = ['1', 'a_1']
-    disk_size = segmenter.most_common / 4
+    disk_size = most_common / 4
     if len(coord_imgs) > 1:
         out_file.write("{\n")
     for i, img in enumerate(coord_imgs):
@@ -136,7 +116,7 @@ def recognize(out_file, segmenter, coord_imgs, imgs_with_staff, imgs_spacing, im
             img, imgs_with_staff[i])
         for j, prim in enumerate(primitives):
             prim = binary_opening(prim, square(
-                segmenter.most_common-imgs_spacing[i]))
+                np.abs(most_common-imgs_spacing[i])))
             saved_img = (255*(1 - prim)).astype(np.uint8)
             labels = predict(saved_img)
             octave = None
@@ -157,7 +137,7 @@ def recognize(out_file, segmenter, coord_imgs, imgs_with_staff, imgs_spacing, im
                         idx, p = estim(
                             boundary[j][0]+bounds[k][2], i, imgs_spacing, imgs_rows)
                         l_res.append(f'{label_map[idx][p]}/4')
-                        if k+1 < len(bounds) and (bounds[k][2]-bounds[k+1][2]) > 1.25*imgs_spacing[i]:
+                        if k+1 < len(bounds) and (bounds[k][2]-bounds[k+1][2]) > 1.5*imgs_spacing[i]:
                             idx, p = estim(
                                 boundary[j][0]+bounds[k][2]-imgs_spacing[i]/2, i, imgs_spacing, imgs_rows)
                             l_res.append(f'{label_map[idx][p]}/4')
@@ -182,22 +162,27 @@ def recognize(out_file, segmenter, coord_imgs, imgs_with_staff, imgs_spacing, im
                 c = boundary[j][2]
                 line_idx, p = estim(int(c), i, imgs_spacing, imgs_rows)
                 l = label_map[line_idx][p]
-            elif label in ['bar', 'bar_b', 'clef', 'clef_b', 'natural', 'natural_b'] or label in []:
+                res.append(get_note_name(prev, l, label))
+            elif label in ['bar', 'bar_b', 'clef', 'clef_b', 'natural', 'natural_b', 't24', 't24_b', 't44', 't44_b'] or label in []:
                 continue
             elif label in ['#', '#_b']:
-                prev = '#'
+                if prim.shape[0] == prim.shape[1]:
+                    prev = '##'
+                else:
+                    prev = '#'
             elif label in ['cross']:
                 prev = '##'
             elif label in ['flat', 'flat_b']:
-                prev = '&'
+                if prim.shape[1] >= 0.5*prim.shape[0]:
+                    prev = '&&'
+                else:
+                    prev = '&'
             elif label in ['dot', 'dot_b', 'p']:
                 if len(res) == 0 or (len(res) > 0 and res[-1] in ['flat', 'flat_b', 'cross', '#', '#_b', 't24', 't24_b', 't44', 't44_b']):
                     continue
                 res[-1] += '.'
             elif label in ['t2', 't4']:
                 time_name += label[1]
-            elif label in ['t24', 't24_b', 't44', 't44_b']:
-                time_name = label[1]+label[2]
             elif label == 'chord':
                 img = thin(1-prim.copy(), max_iter=20)
                 head_img = binary_closing(1-img, disk(disk_size))
@@ -206,9 +191,14 @@ def recognize(out_file, segmenter, coord_imgs, imgs_with_staff, imgs_spacing, im
         if len(time_name) == 2:
             out_file.write("[ " + "\\" + "meter<\"" + str(time_name[0]) + "/" + str(time_name[1])+"\">" + ' '.join(
                 [str(elem) if type(elem) != list else get_chord_notation(elem) for elem in res]) + "]\n")
-            res = ["\\" + "meter<\"" +
-                   str(time_name[0]) + "/" + str(time_name[1])+"\">"] + res
-    if len(coord_imgs):
+        elif len(time_name) == 1:
+            out_file.write("[ " + "\\" + "meter<\"" + '4' + "/" + '2' + "\">" + ' '.join(
+                [str(elem) if type(elem) != list else get_chord_notation(elem) for elem in res]) + "]\n")
+        else:
+            out_file.write("[ " + ' '.join(
+                [str(elem) if type(elem) != list else get_chord_notation(elem) for elem in res]) + "]\n")
+
+    if len(coord_imgs) > 1:
         out_file.write("}")
     print("###########################", res, "##########################")
 
@@ -236,6 +226,8 @@ def main(input_path, output_path):
 
         segmenter = Segmenter(bin_img)
         imgs_with_staff = segmenter.regions_with_staff
+        most_common = segmenter.most_common
+
         # imgs_without_staff = segmenter.regions_without_staff
 
         imgs_spacing = []
@@ -248,7 +240,7 @@ def main(input_path, output_path):
             coord_imgs.append(no_staff_img)
 
         print("Recognize...")
-        recognize(out_file, segmenter, coord_imgs,
+        recognize(out_file, most_common, coord_imgs,
                   imgs_with_staff, imgs_spacing, imgs_rows)
         out_file.close()
         print("Done...")
@@ -262,7 +254,3 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     main(args.inputfolder, args.outputfolder)
-    # with open(f"{args.outputfolder}/Output.txt", "w") as text_file:
-    # text_file.write("Input Folder: %s" % args.inputfolder)
-    # text_file.write("Output Folder: %s" % args.outputfolder)
-    # text_file.write("Date: %s" % datetime.datetime.now())
