@@ -29,40 +29,31 @@
 
 ## 📝 Table of Contents
 - [About](#about)
-- [Demo](#demo)
+- [Methodology](#methodology)
 - [Install](#Install)
-- [How To Play](#play)
 - [Technology](#tech)
 
 ## 🧐 About <a name = "about"></a>
-👽 Earth invasion game built using React, Redux, and SVG. You can try it [here](https://aashrafh.github.io/Invasion/).
+The aim of this project is to develop a sheet music reader. This is called Optical Music Recognition (OMR). Its objective is to convert sheet music to a machine-readable version. We take a simplified version where we convert an image of sheet music to a textual representation that can be further processed to produce midi files or audio files like wav or mp3. 
+<p align="center">
+  <a href="" rel="noopener">
+ <img src="https://github.com/aashrafh/Mozart/blob/main/about.png" alt="About"></a>
+</p>
 
-## 🎥 Demo 
-<div name="demo" align="center" width=1189px>
-  <p align="center">
-  <img src="https://github.com/aashrafh/Invasion/blob/master/demo/demo.gif" alt="GIF Demo">
-    <img src="https://github.com/aashrafh/Invasion/blob/master/demo/screenshot1.png" alt="Image Demo">
-    <img src="https://github.com/aashrafh/Invasion/blob/master/demo/screenshot2.png" alt="Image Demo">
-  </p>
-  </div>
+## 🎥 Methodology <a name = "methodology"></a>
+
 
 ## 🏁 Install <a name = "Install"></a>
-1. Install [Node.js](https://nodejs.org/en/) and [Visual Studio Code](https://code.visualstudio.com/).
-2. Open the folder in Visual Studio Code.
-3. Open a terminal (Terminal > New Terminal).
-4. Run `yarn` . If it failed for any reason, try again.
-5. Run `yarn start` .
-
-**Note:** you can use npm. Then replace `yarn` with `npm install` and `yarn start` with `npm start`.
-
-## 💭 How To Play <a name = "play"></a>
-1. Click on ```Tap To Protect The Earth!```
-2. Use the mouse to point at a flying saucer.
-3. Click to shoot it.
+1. You can use the attached notebook for quick testing and visualization.
+2. You can setup an environment on your local machine to run the project:
+    1. Install [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/)
+    2. ```conda env create -f environment.yml```
+    3. ```conda activate mozart```
+    4. ```python3 main.py <input directory path> <output directory path>```
 
 ## ⛏️ Built Using <a name = "tech"></a>
-- [React](https://reactjs.org/)
-- [Redux](https://redux.js.org/)
-- [SVG](https://developer.mozilla.org/en/docs/Web/SVG)
-- [Styled Components](https://www.styled-components.com/)
-- [PropTypes](https://github.com/facebook/prop-types)
+- [Python 3.8.3](https://www.python.org/)
+- [NumPy](https://numpy.org/doc/stable/index.html)
+- [OpenCV](https://opencv.org/)
+- [scikit-learn](https://scikit-learn.org/stable/)
+- [scikit-image](https://scikit-image.org/)
