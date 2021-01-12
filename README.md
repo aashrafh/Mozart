@@ -40,7 +40,7 @@ The aim of this project is to develop a sheet music reader. This is called Optic
  <img src="https://github.com/aashrafh/Mozart/blob/main/about.png" alt="About"></a>
 </p>
 
-## 🎥 Methodology <a name = "methodology"></a>
+## :computer: Methodology <a name = "methodology"></a>
 
 ### 1. Noise Filtering and Binarization
 <p align="center">
