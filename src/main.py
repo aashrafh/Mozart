@@ -3,7 +3,7 @@ from pre_processing import *
 from connected_componentes import *
 from staff import calculate_thickness_spacing, remove_staff_lines, coordinator
 from segmenter import Segmenter
-from fit import match, remove_repeated_matches, predict
+from fit import predict
 from glob import glob
 import cv2
 import pickle
