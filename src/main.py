@@ -212,8 +212,6 @@ def main(input_path, output_path):
         img = gray_img(img)
         horizontal = IsHorizontal(img)
         if horizontal == False:
-            theta = deskew(img)
-            img = rotation(img, theta)
             img = get_gray(img)
             img = get_thresholded(img, threshold_otsu(img))
             img = get_closer(img)
