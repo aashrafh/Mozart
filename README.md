@@ -95,7 +95,9 @@ The aim of this project is to develop a sheet music reader. This is called Optic
     3. ```conda activate mozart```
     4. ```python3 main.py <input directory path> <output directory path>```
 
-**Note:** please check the following [issue](https://github.com/aashrafh/Mozart/issues/8) for another ```requirements.yml``` file. 
+> You can find the dataset on [Google Drive](https://drive.google.com/drive/u/0/folders/1OVGA3CGnEKjyg_k_L8MP2RO5R3oDIbHE).
+
+> Please check the following [issue](https://github.com/aashrafh/Mozart/issues/8) for another ```requirements.yml``` file. 
 
 
 ## ⛏️ Built Using <a name = "tech"></a>
